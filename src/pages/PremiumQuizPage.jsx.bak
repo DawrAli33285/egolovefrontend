@@ -1,0 +1,234 @@
+import { useEffect } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { useApp } from '../context/AppContext'
+import Logo from '../components/Logo'
+import AvatarCard from '../components/AvatarCard'
+import PillarBars from '../components/PillarBars'
+import RadarChart from '../components/RadarChart'
+import { PILLARS } from '../data/pillars'
+
+const PILLAR_RECS = {
+  1: {
+    high:{ label:'Aligned',      color:'border-emerald-400', badge:'bg-emerald-100 text-emerald-700', quote:'"Integrity is the alignment of what you think, say and do."', rec:'Continue to embody this consistency daily. Inspire those around you.' },
+    mid: { label:'Growing',      color:'border-amber-400',   badge:'bg-amber-100 text-amber-700',     quote:'"Your word is your most powerful contract."',                  rec:'Practice pausing before commitments. Ask: "Does this align with my values?"' },
+    low: { label:'To develop',   color:'border-yellow-600',  badge:'bg-yellow-100 text-yellow-800',   quote:'"The first act of courage is to be honest with yourself."',    rec:'Start a daily journal: 3 moments where your actions matched your values.' },
+  },
+  2: {
+    high:{ label:'Authentic',    color:'border-emerald-400', badge:'bg-emerald-100 text-emerald-700', quote:'"Be yourself; everyone else is already taken." — Oscar Wilde',  rec:'You are a rare example of authentic courage. Help others find their voice.' },
+    mid: { label:'Growing',      color:'border-amber-400',   badge:'bg-amber-100 text-amber-700',     quote:'"Vulnerability is the birthplace of love and belonging." — Brené Brown', rec:'Practice sharing one genuine truth each week with someone you trust.' },
+    low: { label:'To develop',   color:'border-yellow-600',  badge:'bg-yellow-100 text-yellow-800',   quote:'"The mask you wear to protect yourself is the prison that holds you."', rec:'Identify your 3 main social masks. Work gently to remove them.' },
+  },
+  3: {
+    high:{ label:'Pure love',    color:'border-emerald-400', badge:'bg-emerald-100 text-emerald-700', quote:'"Give without remembering; receive without forgetting."',        rec:'Your capacity for unconditional giving is a gift. Protect it from burnout.' },
+    mid: { label:'Growing',      color:'border-amber-400',   badge:'bg-amber-100 text-amber-700',     quote:'"Service to others is the rent you pay for your room here on earth." — M. Ali', rec:'Each week, do one act of kindness with zero expectation of return.' },
+    low: { label:'To develop',   color:'border-yellow-600',  badge:'bg-yellow-100 text-yellow-800',   quote:'"What you give comes back to you multiplied."',                  rec:'Reflect: when you give, what do you secretly expect? Journal this.' },
+  },
+  4: {
+    high:{ label:'United',       color:'border-emerald-400', badge:'bg-emerald-100 text-emerald-700', quote:'"Forgiveness is giving up the hope that the past could be different."', rec:'Your capacity to forgive and unite is extraordinary. Share this wisdom.' },
+    mid: { label:'Growing',      color:'border-amber-400',   badge:'bg-amber-100 text-amber-700',     quote:'"Ho\'oponopono: I love you, I\'m sorry, please forgive me, thank you."', rec:'Practice Ho\'oponopono for 5 minutes daily with a difficult relationship.' },
+    low: { label:'To develop',   color:'border-yellow-600',  badge:'bg-yellow-100 text-yellow-800',   quote:'"Holding a grudge is like drinking poison and expecting the other to die."', rec:'Write a forgiveness letter (not to send) to someone who has hurt you.' },
+  },
+  5: {
+    high:{ label:'Conscious',    color:'border-emerald-400', badge:'bg-emerald-100 text-emerald-700', quote:'"Know thyself." — Socrates',                                    rec:'Your depth of consciousness is rare. Use it to elevate your relationships.' },
+    mid: { label:'Growing',      color:'border-amber-400',   badge:'bg-amber-100 text-amber-700',     quote:'"Between stimulus and response there is a space. In that space is our power."', rec:'Establish a 10-minute morning meditation routine.' },
+    low: { label:'To develop',   color:'border-yellow-600',  badge:'bg-yellow-100 text-yellow-800',   quote:'"Most people are so busy they forget to live."',                 rec:'Start with 5 minutes daily of mindful breathing. Return to the present.' },
+  },
+  6: {
+    high:{ label:'Generous',     color:'border-emerald-400', badge:'bg-emerald-100 text-emerald-700', quote:'"We make a living by what we get; we make a life by what we give." — Churchill', rec:'Your generosity creates abundance. Make sure to also receive gracefully.' },
+    mid: { label:'Growing',      color:'border-amber-400',   badge:'bg-amber-100 text-amber-700',     quote:'"Generosity is not giving me what I need more than you do." — Kahlil Gibran', rec:'This week, give your full presence — undivided attention — to someone who needs it.' },
+    low: { label:'To develop',   color:'border-yellow-600',  badge:'bg-yellow-100 text-yellow-800',   quote:'"Fear of lack is the ego\'s greatest lie."',                    rec:'Challenge: do 3 small gestures of giving this week, counting nothing.' },
+  },
+  7: {
+    high:{ label:'Grateful',     color:'border-emerald-400', badge:'bg-emerald-100 text-emerald-700', quote:'"Gratitude turns what we have into enough." — Melody Beattie', rec:'Your gratitude practice is a source of inner richness. Share it.' },
+    mid: { label:'Growing',      color:'border-amber-400',   badge:'bg-amber-100 text-amber-700',     quote:'"Gratitude is the memory of the heart." — Jean-Baptiste Massillon', rec:'Gratitude journal: write 3 specific things each evening that touched you.' },
+    low: { label:'To develop',   color:'border-yellow-600',  badge:'bg-yellow-100 text-yellow-800',   quote:'"He who is not grateful for little will not be grateful for much."', rec:'Start with one gratitude each morning: "I am grateful for this breath."' },
+  },
+  8: {
+    high:{ label:'Wise',         color:'border-emerald-400', badge:'bg-emerald-100 text-emerald-700', quote:'"The only true wisdom is knowing you know nothing." — Socrates', rec:'Your intellectual humility is your greatest strength. Cultivate the beginner\'s mind.' },
+    mid: { label:'Growing',      color:'border-amber-400',   badge:'bg-amber-100 text-amber-700',     quote:'"The wisest mind has something yet to learn." — Santayana',      rec:'Practice saying "I don\'t know" once a day. Notice the freedom it creates.' },
+    low: { label:'To develop',   color:'border-yellow-600',  badge:'bg-yellow-100 text-yellow-800',   quote:'"An empty vessel makes the most noise."',                        rec:'Read one book outside your comfort zone each month.' },
+  },
+  9: {
+    high:{ label:'Peaceful',     color:'border-emerald-400', badge:'bg-emerald-100 text-emerald-700', quote:'"Peace is not the absence of conflict but the presence of inner harmony."', rec:'Your peace is your gift to the world. Protect it with healthy boundaries.' },
+    mid: { label:'Growing',      color:'border-amber-400',   badge:'bg-amber-100 text-amber-700',     quote:'"Peace begins with a smile." — Mother Teresa',                   rec:'Each day, identify one moment of genuine inner peace and extend it consciously.' },
+    low: { label:'To develop',   color:'border-yellow-600',  badge:'bg-yellow-100 text-yellow-800',   quote:'"You cannot find peace by avoiding life." — Virginia Woolf',     rec:'Explore somatic practices (yoga, breathing, walks in nature) to anchor peace.' },
+  },
+}
+
+const getPillarRec = (love, recs) => love >= 65 ? recs.high : love >= 40 ? recs.mid : recs.low
+
+const ACTION_PLAN_EN = [
+  { freq:'Daily',   action:'Morning gratitude (3 things) + 5 min mindful breathing' },
+  { freq:'Daily',   action:'Evening check: "Were my actions aligned with my values today?"' },
+  { freq:'Weekly',  action:'One random act of kindness with zero expectation of return' },
+  { freq:'Weekly',  action:"Ho'oponopono practice for one difficult relationship (5 min)" },
+  { freq:'Monthly', action:'Deep review of your priority pillar with journaling' },
+  { freq:'Monthly', action:'Share one genuine truth with a trusted person' },
+]
+const ACTION_PLAN_ES = [
+  { freq:'Diario',   action:'Gratitud matutina (3 cosas) + 5 min de respiración consciente' },
+  { freq:'Diario',   action:'"¿Mis acciones estuvieron alineadas con mis valores hoy?"' },
+  { freq:'Semanal',  action:'Un acto de bondad aleatorio sin expectativa de retorno' },
+  { freq:'Semanal',  action:"Práctica de Ho'oponopono para una relación difícil (5 min)" },
+  { freq:'Mensual',  action:'Revisión profunda de tu pilar prioritario con journaling' },
+  { freq:'Mensual',  action:'Compartir una verdad genuina con una persona de confianza' },
+]
+
+export default function PremiumReportPage() {
+  const { t, i18n } = useTranslation()
+  const navigate = useNavigate()
+  const { user, premiumResults } = useApp()
+  const lang = i18n.language === 'es' ? 'es' : 'en'
+
+  useEffect(() => {
+    if (!premiumResults) navigate('/premium-quiz')
+  }, [premiumResults, navigate])
+
+  if (!premiumResults) return null
+
+  const { global, pillarPercents } = premiumResults
+  const actionPlan = lang === 'es' ? ACTION_PLAN_ES : ACTION_PLAN_EN
+
+  const sortedPillars = [...PILLARS].sort(
+    (a, b) => (pillarPercents[a.id]?.love ?? 50) - (pillarPercents[b.id]?.love ?? 50)
+  )
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+
+      
+      <div className="bg-gradient-to-r from-violet-50 to-purple-50 border-b border-violet-100">
+        <div className="max-w-2xl mx-auto px-5 py-5">
+          <div className="flex justify-between items-start flex-wrap gap-3">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Logo size={32} />
+                <span className="font-black text-base">
+                  <span className="text-yellow-700">Ego</span>
+                  <span className="text-violet-600">X</span>
+                  <span className="text-violet-800">Love</span>
+                </span>
+                <span className="border border-yellow-600 text-yellow-700 text-[9px] font-black px-2 py-0.5 rounded-full">
+                  PREMIUM REPORT ⭐
+                </span>
+              </div>
+              <h1 className="text-xl font-black text-indigo-950">📄 Detailed Premium Report</h1>
+              {user && (
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {user.name}{user.age ? `, ${user.age}` : ''} · {new Date().toLocaleDateString()}
+                </p>
+              )}
+            </div>
+            <button
+              onClick={() => window.print()}
+              className="flex items-center gap-1.5 bg-indigo-950 text-white px-5 py-2.5 rounded-xl text-xs font-bold hover:bg-indigo-800 transition"
+            >
+              📥 Download PDF
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-2xl mx-auto px-5 py-6 space-y-6">
+
+      
+        <div className="bg-white rounded-2xl p-6 shadow-sm text-center">
+          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Global Results</h2>
+          <div className="flex items-center justify-center gap-10 mb-6">
+            <div>
+              <div className="text-5xl font-black text-yellow-600">{global.ego}%</div>
+              <div className="text-xs font-bold text-yellow-600 mt-1">🟡 EGO</div>
+            </div>
+            <div className="text-3xl text-gray-200">⚡</div>
+            <div>
+              <div className="text-5xl font-black text-violet-600">{global.love}%</div>
+              <div className="text-xs font-bold text-violet-600 mt-1">💜 LOVE</div>
+            </div>
+          </div>
+          <AvatarCard egoPercent={global.ego} />
+        </div>
+
+       
+        <div className="bg-white rounded-2xl p-5 shadow-sm">
+          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 text-center">📊 Radar by Pillar</h2>
+          <RadarChart pillarPercentMap={pillarPercents} />
+        </div>
+
+      
+        <PillarBars pillarPercentMap={pillarPercents} />
+
+     
+        <div>
+          <h2 className="text-base font-black text-indigo-950 mb-3">🔍 Analysis by Pillar</h2>
+          <div className="space-y-3">
+            {PILLARS.map(p => {
+              const pp  = pillarPercents[p.id] ?? { ego:50, love:50 }
+              const rec = getPillarRec(pp.love, PILLAR_RECS[p.id])
+              const pillarT = t(`pillars.${p.id}`, { returnObjects: true })
+              return (
+                <div key={p.id} className={`bg-white rounded-2xl p-5 shadow-sm border-l-4 ${rec.color}`}>
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="text-2xl">{p.icon}</span>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-bold text-indigo-950">{pillarT.name}</span>
+                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${rec.badge}`}>{rec.label}</span>
+                      </div>
+                      <span className="text-xs text-gray-400">EGO {pp.ego}% · LOVE {pp.love}%</span>
+                    </div>
+                  </div>
+                  <p className="text-xs italic text-violet-700 bg-violet-50 rounded-lg px-3 py-2 mb-2 leading-relaxed">{rec.quote}</p>
+                  <p className="text-xs text-gray-600 leading-relaxed">{rec.rec}</p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+  
+        <div className="bg-white rounded-2xl p-5 shadow-sm">
+          <h2 className="text-sm font-black text-indigo-950 mb-4">🎯 Top 3 Priority Pillars</h2>
+          <div className="space-y-2">
+            {sortedPillars.slice(0, 3).map((p, idx) => {
+              const pp = pillarPercents[p.id] ?? { love:50 }
+              const pillarT = t(`pillars.${p.id}`, { returnObjects: true })
+              return (
+                <div key={p.id} className="flex items-center gap-3 py-2 border-b border-gray-100 last:border-0">
+                  <div className="w-7 h-7 rounded-full bg-violet-600 text-white flex items-center justify-center text-xs font-black flex-shrink-0">
+                    {idx + 1}
+                  </div>
+                  <div className="flex-1 text-sm text-gray-700">{p.icon} {pillarT.name}</div>
+                  <span className="text-xs text-gray-400">LOVE {pp.love}%</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+       
+        <div className="bg-gradient-to-br from-violet-50 to-purple-50 rounded-2xl p-5 border border-violet-100">
+          <h2 className="text-sm font-black text-indigo-950 mb-4">📅 30-Day Action Plan</h2>
+          <div className="space-y-2">
+            {actionPlan.map((item, i) => (
+              <div key={i} className="flex items-start gap-3 py-1.5 text-xs text-gray-700">
+                <span className="font-black text-violet-700 min-w-[60px] text-[11px]">{item.freq}</span>
+                <span className="leading-relaxed">{item.action}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+
+        <div className="text-center space-y-2">
+          <button onClick={() => navigate('/quiz')} className="text-xs text-violet-600 font-semibold hover:underline block mx-auto">
+            ← Retake free quiz
+          </button>
+          <Link to="/" className="text-xs text-gray-400 hover:text-gray-600 transition block">Back to home</Link>
+        </div>
+
+        <p className="text-center text-[10px] text-gray-400">{t('footer')}</p>
+      </div>
+    </div>
+  )
+}
